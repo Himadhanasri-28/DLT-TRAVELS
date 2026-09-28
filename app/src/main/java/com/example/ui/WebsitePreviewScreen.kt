@@ -107,11 +107,16 @@ fun WebsitePreviewScreen(
                     AndroidView(
                         factory = { ctx ->
                             WebView(ctx).apply {
-                                settings.javaScriptEnabled = true
-                                settings.domStorageEnabled = true
-                                settings.loadWithOverviewMode = true
-                                settings.useWideViewPort = true
-                                settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                                setLayerType(android.view.View.LAYER_TYPE_SOFTWARE, null)
+                                settings.apply {
+                                    javaScriptEnabled = true
+                                    domStorageEnabled = true
+                                    loadWithOverviewMode = true
+                                    useWideViewPort = true
+                                    allowFileAccess = true
+                                    allowContentAccess = true
+                                    cacheMode = WebSettings.LOAD_NO_CACHE
+                                }
                                 webViewClient = WebViewClient()
                                 loadUrl("file:///android_asset/website/index.html")
                             }

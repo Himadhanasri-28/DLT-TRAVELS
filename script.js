@@ -162,6 +162,30 @@ _Please confirm availability and rate quote for this trip._`;
       const encodedMessage = encodeURIComponent(formattedMessage);
       const whatsappUrl = `https://wa.me/${defaultWhatsAppNumber}?text=${encodedMessage}`;
 
+      // Forward booking details to n8n webhook
+      try {
+        const activeSessionId = getOrCreateSessionId();
+        fetch('https://himadhanasri.app.n8n.cloud/webhook/248c973a-3532-45d7-b22f-c598eaa7d103/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'sendMessage',
+            sessionId: activeSessionId,
+            chatInput: `New Cab Booking Enquiry: Customer ${name} (${phone}) requested ${tripType} from "${pickup}" to "${destination}" on ${date} at ${time}. Passengers: ${passengers}. Notes: ${message || 'None'}. Please confirm vehicle availability and quote.`,
+            customerName: name,
+            customerPhone: phone,
+            pickupLocation: pickup,
+            destinationLocation: destination,
+            travelDate: date,
+            travelTime: time,
+            passengers: passengers,
+            tripType: tripType,
+            additionalMessage: message,
+            timestamp: new Date().toISOString()
+          })
+        }).catch(function() {});
+      } catch (err) {}
+
       // Show feedback box
       if (feedbackBox && feedbackLink) {
         feedbackLink.href = whatsappUrl;
@@ -178,5 +202,187 @@ _Please confirm availability and rate quote for this trip._`;
     callDirectBtn.addEventListener('click', () => {
       window.location.href = `tel:${defaultPhoneNumber}`;
     });
+  }
+
+  // ==========================================================================
+  // 9. DLT Travels n8n AI Chat Assistant
+  // ==========================================================================
+  const n8nWebhookUrl = 'https://himadhanasri.app.n8n.cloud/webhook/248c973a-3532-45d7-b22f-c598eaa7d103/chat';
+  
+  function getOrCreateSessionId() {
+    try {
+      let sid = localStorage.getItem('dlt_travels_chat_session');
+      if (!sid) {
+        sid = 'dlt-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+        localStorage.setItem('dlt_travels_chat_session', sid);
+      }
+      return sid;
+    } catch (e) {
+      return 'dlt-' + Date.now();
+    }
+  }
+
+  const chatToggleBtn = document.getElementById('dlt-chat-toggle-btn');
+  const chatWindow = document.getElementById('dlt-chat-window');
+  const chatCloseBtn = document.getElementById('dlt-chat-close-btn');
+  const chatForm = document.getElementById('dlt-chat-form');
+  const chatInput = document.getElementById('dlt-chat-input');
+  const chatMessages = document.getElementById('dlt-chat-messages');
+  const chatSuggestions = document.getElementById('dlt-chat-suggestions');
+
+  if (chatToggleBtn && chatWindow) {
+    // Open/Close Chat Window
+    chatToggleBtn.addEventListener('click', () => {
+      const isHidden = chatWindow.classList.contains('dlt-chat-hidden');
+      if (isHidden) {
+        chatWindow.classList.remove('dlt-chat-hidden');
+        if (chatInput) chatInput.focus();
+        scrollChatToBottom();
+      } else {
+        chatWindow.classList.add('dlt-chat-hidden');
+      }
+    });
+
+    if (chatCloseBtn) {
+      chatCloseBtn.addEventListener('click', () => {
+        chatWindow.classList.add('dlt-chat-hidden');
+      });
+    }
+
+    // Handle suggestion chips
+    if (chatSuggestions) {
+      chatSuggestions.addEventListener('click', (e) => {
+        const chip = e.target.closest('.dlt-chip-btn');
+        if (chip) {
+          const query = chip.getAttribute('data-query');
+          if (query && chatInput) {
+            chatInput.value = query;
+            handleUserChatMessage(query);
+          }
+        }
+      });
+    }
+
+    // Handle form submit
+    if (chatForm && chatInput) {
+      chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (!text) return;
+        handleUserChatMessage(text);
+      });
+    }
+  }
+
+  function scrollChatToBottom() {
+    if (chatMessages) {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  }
+
+  function appendChatMessage(sender, text) {
+    if (!chatMessages) return;
+
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `dlt-chat-msg dlt-chat-${sender}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = 'dlt-msg-avatar';
+    avatar.textContent = sender === 'bot' ? '🚗' : '👤';
+
+    const content = document.createElement('div');
+    content.className = 'dlt-msg-content';
+
+    // Format line breaks and bold markers
+    const formatted = escapeHtml(text)
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br/>');
+
+    content.innerHTML = `<p>${formatted}</p>`;
+
+    msgDiv.appendChild(avatar);
+    msgDiv.appendChild(content);
+    chatMessages.appendChild(msgDiv);
+    scrollChatToBottom();
+    return msgDiv;
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  async function handleUserChatMessage(userText) {
+    if (!userText || !chatInput) return;
+
+    // 1. Clear input & append user message
+    chatInput.value = '';
+    appendChatMessage('user', userText);
+
+    // 2. Hide suggestions after first prompt
+    if (chatSuggestions) {
+      chatSuggestions.style.display = 'none';
+    }
+
+    // 3. Show typing indicator
+    const typingElem = document.createElement('div');
+    typingElem.className = 'dlt-chat-msg dlt-chat-bot';
+    typingElem.innerHTML = `
+      <div class="dlt-msg-avatar">🚗</div>
+      <div class="dlt-msg-content">
+        <div class="dlt-typing-indicator">
+          <div class="dlt-typing-dot"></div>
+          <div class="dlt-typing-dot"></div>
+          <div class="dlt-typing-dot"></div>
+        </div>
+      </div>
+    `;
+    chatMessages.appendChild(typingElem);
+    scrollChatToBottom();
+
+    // 4. Send request to n8n webhook
+    const sid = getOrCreateSessionId();
+    try {
+      const response = await fetch(n8nWebhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'sendMessage',
+          sessionId: sid,
+          chatInput: userText
+        })
+      });
+
+      // Remove typing indicator
+      if (typingElem && typingElem.parentNode) {
+        typingElem.parentNode.removeChild(typingElem);
+      }
+
+      if (response.ok) {
+        const data = await response.json();
+        let botReply = '';
+        if (typeof data.output === 'string') {
+          botReply = data.output;
+        } else if (Array.isArray(data) && data[0] && data[0].output) {
+          botReply = data[0].output;
+        } else if (data.text) {
+          botReply = data.text;
+        } else if (data.message) {
+          botReply = data.message;
+        } else {
+          botReply = 'Thank you for reaching out! For instant cab booking with our Maruti Suzuki Dzire, please call or WhatsApp us on +91 9493665524.';
+        }
+        appendChatMessage('bot', botReply);
+      } else {
+        appendChatMessage('bot', 'Our AI assistant is temporarily busy. You can instantly book or get a fare quote by calling or messaging +91 9493665524 on WhatsApp!');
+      }
+    } catch (err) {
+      if (typingElem && typingElem.parentNode) {
+        typingElem.parentNode.removeChild(typingElem);
+      }
+      appendChatMessage('bot', 'Network connection interrupted. Please call +91 9493665524 or chat with us directly on WhatsApp for immediate service!');
+    }
   }
 });
