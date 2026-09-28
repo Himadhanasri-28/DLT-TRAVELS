@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">DLT Travels</string>
+    <string name="tagline">Reliable Local &amp; Outstation Cab Service</string>
+    <string name="call_now">Call Now</string>
+    <string name="whatsapp_us">WhatsApp</string>
+    <string name="book_now">Book Now</string>
+</resources>
