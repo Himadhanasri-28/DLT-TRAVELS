@@ -26,6 +26,9 @@
       </a>
 
       <div class="nav-quick-actions">
+        <button type="button" class="nav-chat-btn" onclick="toggleDltChat(true)" aria-label="Open AI Assistant">
+          💬 AI Chat
+        </button>
         <a href="tel:9493665524" class="nav-call-btn">
           📞 9493665524
         </a>
@@ -348,51 +351,57 @@
   </footer>
 
   <!-- ========================================================================
-       KEEP: FLOATING AI TRAVEL ASSISTANT CHATBOT (Connected to n8n Webhook)
+       DLT TRAVELS AI ASSISTANT (Connected to n8n Webhook)
+       https://himadhanasri.app.n8n.cloud/webhook/248c973a-3532-45d7-b22f-c598eaa7d103/chat
        ======================================================================== -->
   <div id="dlt-ai-chat-root">
-    <!-- Chat Floating Trigger Button -->
-    <button id="dlt-chat-toggle-btn" class="dlt-chat-toggle" aria-label="Open AI Travel Assistant">
-      <span class="dlt-chat-badge-dot"></span>
-      <span class="dlt-chat-btn-icon">💬</span>
-      <span class="dlt-chat-btn-label">AI Assistant</span>
+    <!-- Floating Launcher Button (Always visible on bottom-right) -->
+    <button id="dlt-chat-toggle-btn" class="dlt-chat-toggle-launcher" onclick="toggleDltChat()" aria-label="Open AI Assistant">
+      <span class="dlt-chat-dot-live"></span>
+      <span class="dlt-chat-icon-emoji">💬</span>
+      <span class="dlt-chat-label-text">AI Assistant</span>
     </button>
 
-    <!-- Chat Modal Window -->
-    <div id="dlt-chat-window" class="dlt-chat-window dlt-chat-hidden" role="dialog" aria-modal="true" aria-label="AI Travel Assistant Chat">
-      <div class="dlt-chat-header">
-        <div class="dlt-chat-header-info">
-          <div class="dlt-chat-avatar">🚗</div>
+    <!-- Floating Chat Window Modal -->
+    <div id="dlt-chat-window" class="dlt-chat-window-box" role="dialog" aria-modal="true" aria-label="DLT AI Travel Assistant" style="display: none;">
+      <!-- Header -->
+      <div class="dlt-chat-modal-header">
+        <div class="dlt-chat-modal-brand">
+          <div class="dlt-chat-brand-avatar">🚗</div>
           <div>
-            <h3 class="dlt-chat-title">DLT AI Travel Assistant</h3>
-            <p class="dlt-chat-status"><span class="dlt-status-dot"></span> 24x7 Active • Maruti Dzire Vizag</p>
+            <h3 class="dlt-chat-brand-title">DLT AI Travel Assistant</h3>
+            <p class="dlt-chat-brand-subtitle"><span class="dlt-online-pulse"></span> Online 24x7 • Maruti Dzire Vizag</p>
           </div>
         </div>
-        <button id="dlt-chat-close-btn" class="dlt-chat-close" aria-label="Close Chat">&times;</button>
+        <button type="button" class="dlt-chat-close-btn" onclick="toggleDltChat(false)" aria-label="Close Chat">&times;</button>
       </div>
 
-      <div id="dlt-chat-messages" class="dlt-chat-body">
-        <div class="dlt-chat-msg dlt-chat-bot">
-          <div class="dlt-msg-avatar">🚗</div>
-          <div class="dlt-msg-content">
+      <!-- Messages List -->
+      <div id="dlt-chat-messages" class="dlt-chat-messages-scroll">
+        <!-- Initial Bot Greeting -->
+        <div class="dlt-bubble-row dlt-row-bot">
+          <div class="dlt-avatar-icon">🚗</div>
+          <div class="dlt-bubble-card">
             <p>Hello! 😊 Welcome to <strong>DLT Travels</strong>.</p>
-            <p>I am your AI Travel Assistant. We provide reliable and comfortable taxi services in Visakhapatnam and outstation with our premium <strong>Maruti Suzuki Dzire (4+1 sedan)</strong>.</p>
+            <p>I am your AI Travel Assistant. We provide reliable and comfortable taxi services in and around Visakhapatnam using our premium <strong>Maruti Suzuki Dzire (4+1 sedan)</strong>.</p>
             <p>How can I help you with your journey or booking today?</p>
           </div>
         </div>
 
-        <div class="dlt-chat-suggestions" id="dlt-chat-suggestions">
-          <button type="button" class="dlt-chip-btn" data-query="What are the rates for Araku Valley trip?">🌄 Araku Tour</button>
-          <button type="button" class="dlt-chip-btn" data-query="I need an airport transfer at Visakhapatnam Airport (VTZ)">✈️ Airport Transfer</button>
-          <button type="button" class="dlt-chip-btn" data-query="What are your local Vizag city sightseeing packages?">🏖️ Local Vizag</button>
-          <button type="button" class="dlt-chip-btn" data-query="How can I book a ride with DLT Travels?">📅 How to Book</button>
+        <!-- Quick 1-Click Questions -->
+        <div class="dlt-quick-chips" id="dlt-quick-chips">
+          <button type="button" class="dlt-chip-item" onclick="sendQuickChatMessage('What are the rates for Araku Valley trip?')">🌄 Araku Tour Rates</button>
+          <button type="button" class="dlt-chip-item" onclick="sendQuickChatMessage('I need an airport transfer at Visakhapatnam Airport (VTZ)')">✈️ Airport Pickup / Drop</button>
+          <button type="button" class="dlt-chip-item" onclick="sendQuickChatMessage('What are your local Vizag city sightseeing packages?')">🏖️ Local Vizag Sightseeing</button>
+          <button type="button" class="dlt-chip-item" onclick="sendQuickChatMessage('How can I book a ride with DLT Travels?')">📅 How to Book Dzire Cab</button>
         </div>
       </div>
 
-      <form id="dlt-chat-form" class="dlt-chat-footer">
+      <!-- Input Bar Form -->
+      <form id="dlt-chat-form" class="dlt-chat-input-bar" onsubmit="handleChatSubmit(event)">
         <input type="text" id="dlt-chat-input" placeholder="Ask about trips, routes, rates..." autocomplete="off" required />
-        <button type="submit" id="dlt-chat-send" aria-label="Send Message">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+        <button type="submit" id="dlt-chat-send-btn" aria-label="Send Message">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
           </svg>
         </button>
