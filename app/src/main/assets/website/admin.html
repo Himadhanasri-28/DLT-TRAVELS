@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DLT Travels Admin Portal | Easy Bookings Manager</title>
+  <link rel="stylesheet" href="/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* Admin Specific Overrides for Maximum Readability */
+    body {
+      background-color: #0F172A;
+      color: #F8FAFC;
+      font-size: 18px;
+    }
+    .admin-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 16px 80px;
+    }
+    .admin-header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1E293B;
+      padding: 16px 20px;
+      border-radius: 16px;
+      border: 1px solid #334155;
+      margin-bottom: 24px;
+    }
+    .admin-title-wrap h1 {
+      font-size: 1.6rem;
+      margin: 0;
+      color: #FFFFFF;
+      font-weight: 800;
+    }
+    .admin-title-wrap p {
+      margin: 4px 0 0 0;
+      color: #F59E0B;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn-top-logout {
+      background: #EF4444;
+      color: #FFFFFF;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .btn-top-home {
+      background: #334155;
+      color: #FFFFFF;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1rem;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .admin-tabs-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .admin-tab-btn {
+      background: #1E293B;
+      color: #94A3B8;
+      border: 2px solid #334155;
+      padding: 18px 12px;
+      border-radius: 16px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .admin-tab-btn.active {
+      background: #F59E0B;
+      color: #0F172A;
+      border-color: #F59E0B;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+    }
+    .admin-tab-btn .badge-pill {
+      background: #0F172A;
+      color: #F59E0B;
+      padding: 2px 10px;
+      border-radius: 999px;
+      font-size: 0.95rem;
+    }
+    .admin-tab-btn.active .badge-pill {
+      background: #0F172A;
+      color: #FFFFFF;
+    }
+    .btn-big-add-booking {
+      width: 100%;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      color: #FFFFFF;
+      border: none;
+      padding: 18px 24px;
+      border-radius: 16px;
+      font-size: 1.3rem;
+      font-weight: 800;
+      cursor: pointer;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+      transition: transform 0.15s;
+    }
+    .btn-big-add-booking:hover {
+      transform: translateY(-2px);
+    }
+    /* Cards */
+    .admin-booking-card {
+      background: #1E293B;
+      border: 2px solid #334155;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+    .upcoming-card {
+      border-left: 8px solid #F59E0B;
+    }
+    .past-card {
+      border-left: 8px solid #64748B;
+      opacity: 0.88;
+    }
+    .booking-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .customer-name {
+      font-size: 1.5rem;
+      margin: 4px 0 0 0;
+      color: #FFFFFF;
+      font-weight: 800;
+    }
+    .trip-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .trip-local { background: #3B82F6; color: #FFF; }
+    .trip-outstation { background: #F59E0B; color: #000; }
+    .trip-airport { background: #10B981; color: #FFF; }
+    .booking-date-badge {
+      background: #0F172A;
+      padding: 8px 14px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: right;
+      border: 1px solid #334155;
+    }
+    .badge-date { font-weight: 800; color: #F59E0B; font-size: 1.05rem; }
+    .badge-time { font-weight: 600; color: #94A3B8; font-size: 0.95rem; }
+    .booking-route-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      background: #0F172A;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+      border: 1px solid #334155;
+    }
+    .route-item { display: flex; flex-direction: column; gap: 4px; }
+    .route-label { font-size: 0.75rem; color: #94A3B8; font-weight: 800; }
+    .route-text { font-size: 1.1rem; color: #FFFFFF; font-weight: 700; word-break: break-word; }
+    .booking-details-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      font-size: 1rem;
+      color: #CBD5E1;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .booking-card-actions {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr 1.2fr 0.8fr;
+      gap: 10px;
+    }
+    .btn-action {
+      border: none;
+      padding: 14px 10px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: filter 0.15s;
+    }
+    .btn-action:hover { filter: brightness(1.1); }
+    .btn-call { background: #10B981; color: #FFFFFF; font-size: 1.1rem; }
+    .btn-wa { background: #25D366; color: #FFFFFF; font-size: 1.05rem; }
+    .btn-complete { background: #F59E0B; color: #0F172A; }
+    .btn-reopen { background: #3B82F6; color: #FFFFFF; }
+    .btn-delete { background: #475569; color: #F8FAFC; }
+    .btn-delete:hover { background: #EF4444; }
+
+    /* Modals */
+    .admin-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .admin-modal-overlay.hidden { display: none; }
+    .admin-modal-box {
+      background: #1E293B;
+      border: 2px solid #F59E0B;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 600px;
+      padding: 24px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .admin-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .admin-modal-header h2 { margin: 0; color: #FFFFFF; font-size: 1.5rem; font-weight: 800; }
+    .modal-close-btn { background: none; border: none; font-size: 2rem; color: #94A3B8; cursor: pointer; }
+    .admin-form-group { margin-bottom: 16px; }
+    .admin-form-group label { display: block; font-weight: 700; color: #F59E0B; margin-bottom: 6px; font-size: 1.05rem; }
+    .admin-form-group input, .admin-form-group select, .admin-form-group textarea {
+      width: 100%;
+      padding: 14px;
+      background: #0F172A;
+      border: 2px solid #334155;
+      color: #FFFFFF;
+      border-radius: 12px;
+      font-size: 1.1rem;
+      font-family: inherit;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .admin-form-group input:focus, .admin-form-group select:focus {
+      border-color: #F59E0B;
+    }
+    .btn-save-modal {
+      width: 100%;
+      background: #F59E0B;
+      color: #0F172A;
+      font-size: 1.25rem;
+      font-weight: 800;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    /* Login Box */
+    .admin-login-card {
+      max-width: 460px;
+      margin: 80px auto;
+      background: #1E293B;
+      padding: 36px 28px;
+      border-radius: 20px;
+      border: 2px solid #F59E0B;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    .admin-login-card h2 { font-size: 1.8rem; margin: 0 0 10px; color: #FFF; font-weight: 800; }
+    .login-sub { color: #94A3B8; margin-bottom: 24px; font-size: 1rem; }
+    .login-error-text { color: #EF4444; font-weight: 700; margin-top: 12px; font-size: 1rem; }
+
+    /* Feedback Cards */
+    .admin-feedback-card {
+      background: #1E293B;
+      border: 2px solid #334155;
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .admin-feedback-card.pending { border-left: 8px solid #F59E0B; }
+    .admin-feedback-card.approved { border-left: 8px solid #10B981; }
+    .feedback-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+    .feedback-author { font-size: 1.3rem; margin: 0; color: #FFF; }
+    .feedback-stars { color: #F59E0B; font-size: 1.2rem; margin-top: 4px; }
+    .feedback-status-badge { padding: 4px 10px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; }
+    .status-pending { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+    .status-approved { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+    .feedback-text { font-size: 1.15rem; color: #E2E8F0; line-height: 1.5; margin: 12px 0 16px; font-style: italic; }
+    .feedback-actions { display: flex; gap: 10px; }
+    .btn-approve { background: #10B981; color: #FFF; flex: 1; }
+    .btn-unapprove { background: #EAB308; color: #000; flex: 1; }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .status-badge.connected { background: rgba(16, 185, 129, 0.2); color: #10B981; }
+    .status-badge.local { background: rgba(245, 158, 11, 0.2); color: #F59E0B; }
+
+    @media (max-width: 680px) {
+      .admin-tabs-bar { grid-template-columns: 1fr; }
+      .booking-route-grid { grid-template-columns: 1fr; }
+      .booking-card-actions { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================================
+       1. LOGIN SECTION (If not authenticated)
+       ======================================================================== -->
+  <section id="admin-auth-section" class="admin-container">
+    <div class="admin-login-card">
+      <div style="font-size: 3rem; margin-bottom: 10px;">🔐</div>
+      <h2>DLT Travels Admin</h2>
+      <p class="login-sub">Father's Private Booking &amp; Review Management Portal</p>
+
+      <form id="admin-login-form">
+        <div class="admin-form-group" style="text-align: left;">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" placeholder="father@dlttravels.com" value="father@dlttravels.com" required />
+        </div>
+
+        <div class="admin-form-group" style="text-align: left;">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="Enter password" required />
+        </div>
+
+        <button type="submit" class="btn-save-modal" style="margin-top: 14px;">
+          🚀 Log In to Dashboard
+        </button>
+
+        <p id="login-error" class="login-error-text"></p>
+
+        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #334155;">
+          <a href="/" style="color: #94A3B8; text-decoration: none; font-size: 0.95rem;">&larr; Back to Public Website</a>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       2. DASHBOARD SECTION (For Father)
+       ======================================================================== -->
+  <section id="admin-dashboard-section" class="admin-container hidden">
+    <!-- Top Header -->
+    <div class="admin-header-bar">
+      <div class="admin-title-wrap">
+        <h1>DLT Travels Portal</h1>
+        <p>👋 Welcome, Father! Maruti Dzire Bookings</p>
+      </div>
+      <div class="header-actions">
+        <button id="btn-open-settings" class="btn-top-home" title="Configure Firebase Connection">⚙️ Firebase</button>
+        <a href="/" class="btn-top-home">🌐 Website</a>
+        <button id="admin-logout-btn" class="btn-top-logout">Log Out</button>
+      </div>
+    </div>
+
+    <!-- Add Booking Quick Button -->
+    <button id="btn-open-add-booking" class="btn-big-add-booking">
+      <span style="font-size: 1.6rem;">➕</span> Add New Phone Call Booking
+    </button>
+
+    <!-- Tabs Bar -->
+    <div class="admin-tabs-bar">
+      <button class="admin-tab-btn active" data-tab="upcoming">
+        <span>🚗 Upcoming Rides</span>
+        <span class="badge-pill" id="upcoming-count-badge">0</span>
+      </button>
+
+      <button class="admin-tab-btn" data-tab="past">
+        <span>📋 Completed Rides</span>
+      </button>
+
+      <button class="admin-tab-btn" data-tab="feedback">
+        <span>⭐ Customer Feedback</span>
+      </button>
+    </div>
+
+    <!-- TAB 1: Upcoming Bookings -->
+    <div id="tab-upcoming" class="admin-tab-content">
+      <div id="upcoming-bookings-list">
+        <!-- Rendered by admin.js -->
+      </div>
+    </div>
+
+    <!-- TAB 2: Past Bookings -->
+    <div id="tab-past" class="admin-tab-content hidden">
+      <div id="past-bookings-list">
+        <!-- Rendered by admin.js -->
+      </div>
+    </div>
+
+    <!-- TAB 3: Customer Feedback -->
+    <div id="tab-feedback" class="admin-tab-content hidden">
+      <div style="background: #1E293B; padding: 14px 20px; border-radius: 14px; margin-bottom: 20px; border: 1px solid #334155;">
+        <p style="margin: 0; font-size: 1.05rem; color: #F59E0B;">
+          💡 <strong>Tip for Father:</strong> Reviews submitted by customers stay "Pending" until you tap "Approve". Only approved reviews show publicly on your website!
+        </p>
+      </div>
+      <div id="feedback-management-list">
+        <!-- Rendered by admin.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       MODAL: Add Booking Manually (When someone calls directly)
+       ======================================================================== -->
+  <div id="modal-add-booking" class="admin-modal-overlay hidden">
+    <div class="admin-modal-box">
+      <div class="admin-modal-header">
+        <h2>➕ Enter Phone Call Booking</h2>
+        <button id="btn-close-add-booking" class="modal-close-btn">&times;</button>
+      </div>
+
+      <form id="form-manual-booking">
+        <div class="admin-form-group">
+          <label for="manual-name">Customer Name *</label>
+          <input type="text" id="manual-name" placeholder="e.g. Ramesh Varma" required />
+        </div>
+
+        <div class="admin-form-group">
+          <label for="manual-phone">Customer Phone Number *</label>
+          <input type="tel" id="manual-phone" placeholder="e.g. 9876543210" required />
+        </div>
+
+        <div class="admin-form-group">
+          <label for="manual-pickup">Pickup Address / Area *</label>
+          <input type="text" id="manual-pickup" placeholder="e.g. MVP Colony, Sector 4" required />
+        </div>
+
+        <div class="admin-form-group">
+          <label for="manual-drop">Drop Destination *</label>
+          <input type="text" id="manual-drop" placeholder="e.g. Araku Valley or Airport" required />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="admin-form-group">
+            <label for="manual-date">Travel Date *</label>
+            <input type="date" id="manual-date" required />
+          </div>
+
+          <div class="admin-form-group">
+            <label for="manual-time">Pickup Time</label>
+            <input type="time" id="manual-time" value="09:00" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div class="admin-form-group">
+            <label for="manual-passengers">Passengers</label>
+            <select id="manual-passengers">
+              <option value="1">1 Person</option>
+              <option value="2">2 People</option>
+              <option value="3">3 People</option>
+              <option value="4" selected>4 People (Max for Dzire)</option>
+            </select>
+          </div>
+
+          <div class="admin-form-group">
+            <label for="manual-trip-type">Trip Type</label>
+            <select id="manual-trip-type">
+              <option value="Local City (Vizag)">Local City (Vizag)</option>
+              <option value="Outstation Round Trip" selected>Outstation Round Trip</option>
+              <option value="Outstation One-Way">Outstation One-Way</option>
+              <option value="Airport Drop (VTZ)">Airport Drop (VTZ)</option>
+              <option value="Airport Pickup (VTZ)">Airport Pickup (VTZ)</option>
+              <option value="Custom Tour">Custom Tour</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="admin-form-group">
+          <label for="manual-notes">Special Notes (Fare agreed, luggage, etc.)</label>
+          <textarea id="manual-notes" rows="2" placeholder="e.g. ₹12/km agreed, 2 bags"></textarea>
+        </div>
+
+        <button type="submit" class="btn-save-modal">
+          💾 Save to Upcoming Bookings
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL: Firebase Credentials Setup
+       ======================================================================== -->
+  <div id="modal-firebase-settings" class="admin-modal-overlay hidden">
+    <div class="admin-modal-box">
+      <div class="admin-modal-header">
+        <h2>⚙️ Firebase Configuration</h2>
+        <button id="btn-close-settings" class="modal-close-btn">&times;</button>
+      </div>
+
+      <p style="color: #CBD5E1; font-size: 0.95rem; line-height: 1.5;">
+        Paste your Firebase Web App configuration JSON here. Once saved, bookings and feedback sync directly to your Cloud Firestore database!
+      </p>
+
+      <div style="margin-bottom: 14px;">
+        <span id="config-status-badge" class="status-badge local">Loading status...</span>
+      </div>
+
+      <form id="form-firebase-settings">
+        <div class="admin-form-group">
+          <label for="firebase-config-json">Firebase Config JSON</label>
+          <textarea id="firebase-config-json" rows="8" style="font-family: monospace; font-size: 0.9rem;"></textarea>
+        </div>
+
+        <button type="submit" class="btn-save-modal">
+          💾 Save &amp; Connect Firebase
+        </button>
+
+        <button type="button" id="btn-reset-config" style="width: 100%; background: #334155; color: #FFF; border: none; padding: 12px; border-radius: 12px; margin-top: 10px; font-weight: 700; cursor: pointer;">
+          Reset to Local Offline Mode
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase Compat Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <!-- App Scripts -->
+  <script src="/firebase-config.js"></script>
+  <script src="/admin.js"></script>
+</body>
+</html>

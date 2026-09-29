@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Bookings Collection
+    // - Anyone can create a new booking
+    // - Only the authenticated admin (father) can read, update, or delete bookings
+    match /bookings/{bookingId} {
+      allow create: if true;
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // 2. Customer Feedback Collection
+    // - Anyone can submit new feedback (saved with status "pending")
+    // - Public visitors can only read reviews that have status == "approved"
+    // - Only authenticated admin can view pending feedback, approve (update), or delete
+    match /feedback/{feedbackId} {
+      allow create: if true;
+      allow read: if resource.data.status == "approved" || request.auth != null;
+      allow update, delete: if request.auth != null;
+    }
+  }
+}
